@@ -128,10 +128,8 @@ typedef enum
   * @}
   */
 #include <stdint.h>
+#include "core_cm3.h"
 
-#ifndef __IO
-#define __IO volatile
-#endif
 
 /** @addtogroup Peripheral_registers_structures
   * @{
