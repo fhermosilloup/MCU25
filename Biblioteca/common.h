@@ -9,19 +9,14 @@
 #define COMMON_H_
 
 /* Exported includes -----------------------------------------------*/
+#include "stm32f1xx_hal.h"
 #include <stdint.h>
 #include <string.h>
 
 /* Exported defines ------------------------------------------------*/
-#define SystemCoreClock 8000000UL
 
 /* Exported macros -------------------------------------------------*/
 #define BIT(n)				(1UL << (n))
-
-#define __enable_irq()	__asm volatile ("cpsie i" : : : "memory")
-#define __disable_irq() __asm volatile ("cpsid i" : : : "memory")
-
-#define __NOP() __asm volatile ("nop")
 
 /* Exported typedefs ------------------------------------------------*/
 typedef enum

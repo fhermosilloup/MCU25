@@ -95,6 +95,12 @@ typedef enum
 	LCD_8BITS_INTERFACE=0x10
 } lcd_interface_t;
 
+typedef enum
+{
+	LCD_LEFT_DIRECTION = 0,
+	LCD_RIGHT_DIRECTION
+} lcd_shift_t;
+
 /* Exported variables -----------------------------------------------*/
 
 /* Exported prototype function --------------------------------------*/
@@ -107,5 +113,15 @@ void LCD_Write(uint8_t data, uint8_t isCmd);
 
 // See pag. 24-25
 uint8_t LCD_Read(uint8_t isData);
+
+// Extended
+uint8_t int2str(uint32_t x, char *pcBuffer);
+uint8_t float2str(float x, char *pcBuffer, uint8_t pre);
+
+stm32_err_t LCD_Goto_XY(uint8_t x, uint8_t y);
+stm32_err_t LCD_Print(const char *pcString);
+stm32_err_t LCD_ScrollText(lcd_shift_t dir, uint8_t steps, uint32_t speed);
+stm32_err_t LCD_Create5X8Char(uint8_t loc, const uint8_t *charmap);
+
 
 #endif /* LCD_H_ */

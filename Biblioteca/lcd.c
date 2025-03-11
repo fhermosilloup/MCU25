@@ -15,6 +15,9 @@
 
 /* Private typedefs ------------------------------------------------*/
 
+/* Private constants -----------------------------------------------*/
+const uint8_t ucLcdRowOffset[4] = {0x00, 0x40, 0x14, 0x54};
+
 /* Private variables -----------------------------------------------*/
 static uint8_t ucLcdIsInit = 0x00;
 
@@ -146,6 +149,145 @@ uint8_t LCD_Read(uint8_t isData)
 
 	return dout;
 }
+
+/**
+  * @brief  Set LCD Address Counter (AC).
+  * @param  x The column position.
+  * 		 This parameter ranging from 0 to LCD_NUM_COLS-1.
+  * @param  y The row position.
+  * 		 This parameter ranging from 0 to LCD_NUM_ROWS-1.
+  * @retval STM32 error status.
+  * 		 The return value can be one of the following:
+  * 		   @arg STM32_OK: If everything is OK.
+  * 		   @arg STM32_ERR_OUT_RANGE: If x>=LCD_NUM_COLS or y>=LCD_NUM_ROWS.
+  */
+stm32_err_t LCD_Goto_XY(uint8_t x, uint8_t y)
+{
+	if(x > LCD_NUM_COLS-1 || y > LCD_NUM_ROWS-1) return STM32_ERR_OUT_RANGE;
+
+	LCD_Write(LCD_CMD_SET_DDRAM_ADDR | ucLcdRowOffset[y] | x, LCD_COMMAND);
+
+	return STM32_OK;
+}
+
+stm32_err_t LCD_Print(const char *pcString)
+{
+	// Assert pointer
+	if(!pcString) return STM32_ERR_NULL_POINTER;
+
+	// Write string
+	while(*pcString)
+	{
+		LCD_Write(*pcString++, LCD_DATA);
+	}
+
+	return STM32_OK;
+}
+
+stm32_err_t LCD_ScrollText(lcd_shift_t dir, uint8_t steps, uint32_t speed)
+{
+	// Scroll
+	for(int i = 0; i < steps; i++)
+	{
+		LCD_Write(LCD_CMD_SHIFT | LCD_SHIFT_DISPLAY | (uint8_t)dir*LCD_RIGHT_SHIFT, LCD_COMMAND);
+		delay_ms(speed);
+	}
+
+	return STM32_OK;
+}
+
+stm32_err_t LCD_Create5X8Char(uint8_t loc, const uint8_t *charmap)
+{
+	// Assert argin
+	if(!charmap) return STM32_ERR_NULL_POINTER;
+	if( (loc+1) << 3 > LCD_GCRAM_DEPTH - 1) return STM32_ERR_OUT_RANGE;
+
+	// Set CG address
+	LCD_Write(LCD_CMD_SET_CGRAM_ADDR | loc << 3, LCD_COMMAND);
+
+	// Write the 5x8 (WIDTH x HEIGHT) custom char
+	for(int i = 0; i < 8; i++)
+	{
+		LCD_Write(charmap[i], LCD_DATA);
+	}
+
+	// The new custom char can now be printed by writing
+	// the location of this char (0x00 - 0x07)
+	return STM32_OK;
+}
+/*
+ * @name	int2str
+ * @brief	This function formats an int32 variable into a string
+ *
+ * @arg 	x, int32_t, variable to convert.
+ * @arg		pcBuffer, char *, a char array of at most 10 items where the
+ * 			string will be stored
+ * @arg		pre, uint8_t. the precision of the conversion
+ *
+ * @return	The output string length
+ */
+uint8_t int2str(uint32_t x, char *pcBuffer)
+{
+	uint8_t ndigs = 0;
+	do {
+		pcBuffer[ndigs++] = '0' + (x % 10); // Extract least significant digit
+		x /= 10;
+	} while (x > 0);
+    pcBuffer[ndigs--] = '\0'; // Set the end string character
+
+
+	// Reverse the string into buffer
+    uint8_t ndigstmp = ndigs;
+	uint8_t j = 0;
+	while (ndigstmp > j) {
+		char tmp = pcBuffer[j];
+		pcBuffer[j++] = pcBuffer[ndigstmp];
+		pcBuffer[ndigstmp--] = tmp;
+	}
+
+	return ndigs+1;
+}
+
+/*
+ * @name	float2str
+ * @brief	This function formats a float variable into a string.
+ *
+ * @arg 	x, float, variable to convert
+ * @arg		pcBuffer, char *, a char array of at most 13 items where
+ * 			the string will be stored.
+ * @arg		pre, uint8_t. the precision of the conversion.
+ *
+ * @return	The output string length
+ */
+uint8_t float2str(float x, char *pcBuffer, uint8_t pre)
+{
+	// Split the integer and decimal part
+	int16_t integer = (int16_t)x;
+	float fDec = (x - integer);
+	for(uint8_t i = 0; i < pre; i++)
+	{
+		fDec *= 10.0;
+	}
+	uint16_t dec = (int16_t)fDec;
+
+	// Convert integer part to char
+	uint8_t isNegative = 0;
+	if(integer < 0)
+	{
+		integer = -integer;
+		isNegative = 1;
+		pcBuffer[0]='-';
+	}
+	uint8_t ndigs = int2str((uint32_t)integer, &pcBuffer[isNegative]);
+
+	// Convert decimal part to char
+	pcBuffer[isNegative+ndigs] = '.';
+	uint8_t ndigsdec = int2str((uint32_t)dec, &pcBuffer[isNegative+ndigs+1]);
+	pcBuffer[ndigs + isNegative + ndigsdec + 1] = '\0';
+
+	return ndigs + isNegative + ndigsdec + 1;
+}
+
 
 /* Private reference function --------------------------------------*/
 static uint8_t LCD_Wait_Busy(void)

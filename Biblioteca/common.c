@@ -47,7 +47,6 @@ void delay_10us(uint32_t usx10)
 
 void delay_us(uint32_t us)
 {
-#if (COMMON_US_FACTOR==1)
 	/*
 	 * This for loop takes 10 cycles per iteration
 	 * The outer while takes 4 cycles per iteration
@@ -63,15 +62,10 @@ void delay_us(uint32_t us)
 	 * should be Fclk / (1000*CYCLES_PER_ITER), i.e.,
 	 * 8MHz/(1000*10) = 800
 	 */
-	for (volatile unsigned int cycles = 0; cycles < us; cycles++)
-	{
-	}
-#else
 	while(us--)
 	{
 		for (volatile unsigned int cycles = 0; cycles < COMMON_US_FACTOR; cycles++)
 		{
 		}
 	}
-#endif
 }
