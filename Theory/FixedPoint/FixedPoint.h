@@ -1,1 +1,21 @@
+#define q8_to_float(XQ8, N) 	((float)(XQ8)*(1.0F/(float)(1 << (N))))
+#define float_to_q8(XFlt, N) 	(int8_t)(XFlt * (float)(1 << (N)))
+#define q16_to_float(XQ16, N)	((float)(XQ16)*(1.0F/(float)(1 << (N))))
+#define float_to_q16(XFlt, N)	(int16_t)(XFlt * (float)(1 << (N)))
+#define q32_to_float(XQ32, N)	((float)(XQ32)*(1.0F/(float)(1 << (N))))
+#define float_to_q32(XFlt, N) 	(int32_t)(XFlt * (float)(1 << (N)))
 
+#define q8_add(a,b,N)  (a+b)
+#define q8_sub(a,b,N)  (a-b)
+#define q8_mul(a,b,N)  (int8_t)(((int16_t)a*(int16_t)b)>>(N))
+#define q8_div(a,b,N)  (int8_t)(((int16_t)a<<(N))/b)
+
+#define q16_add(a,b,N)  (a+b)
+#define q16_sub(a,b,N)  (a-b)
+#define q16_mul(a,b,N)  (int16_t)(((int32_t)a*(int32_t)b)>>(N))
+#define q16_div(a,b,N)  (int16_t)(((int32_t)a<<(N))/b)
+
+#define q32_add(a,b,N)  (a+b)
+#define q32_sub(a,b,N)  (a-b)
+#define q32_mul(a,b,N)  (int32_t)(((int64_t)a*(int64_t)b)>>(N))
+#define q32_div(a,b,N)  (int32_t)(((int64_t)a<<(N))/b)
