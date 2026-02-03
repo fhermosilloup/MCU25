@@ -31,7 +31,7 @@ int main(void)
 	GPIOC->CRH &= ~(1 << 22 | 1 << 23); // CNF13 = 00 (Push-pull)
 
 	// PC13 = 1
-	GPIOC->ODR |= 1 << 13;
+	GPIOC->ODR |= 1 << 13; // This does not turn on the led on the bluepill board because it is low-active
 
 	/* Loop forever */
 	while(1)
